@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<document>
+	<mscreen>
+		<configuration device="CIRCLE_360x360" id="config1"
+			name="common" orientation="portrait" type="common" />
+	</mscreen>
+	<views startup="main">
+		<view id="main" indicator="true" type="view" page_location_x="0"
+			page_location_y="0">
+			<grid align_h="fill" vsize_w="1000" align_v="fill" visible="true"
+				weight_v="1" id="grid1" weight_h="1" vsize_h="1000">
+				<button align_v="fill" visible="true" weight_v="1" weight_h="1"
+					align_h="fill" disable="false" style="bottom" id="bntConfig" text="Config"
+					pack_x="322" pack_y="694" pack_w="364" pack_h="364">
+					<event connection_wrapper="connection_main_bntConfig_onclicked"
+						function_name="main_bntConfig_onclicked" signal="clicked" target="viewConfig" />
+				</button>
+				<image resizable_up="true" resizable_down="true" align_v="fill"
+					visible="false" weight_v="1" weight_h="1" align_h="fill"
+					aspect_fixed="false" no_scale="false" id="DoorClosedImage"
+					fill_outside="false" pack_x="269" pack_y="133" pack_w="501" pack_h="509"
+					src="door-01.png">
+					<event function_name="main_image1_onclicked" signal="clicked" />
+				</image>
+				<entry align_v="fill" visible="true" weight_v="1" editable="false"
+					scroll="false" weight_h="1" single_line="false" align_h="fill"
+					password="false" file_text_format="plain_utf8" disable="false" id="NoConfig"
+					text="No Configuration Found. Please Configure." pack_x="169"
+					pack_y="273" pack_w="716" pack_h="281"></entry>
+				<image resizable_up="true" resizable_down="true" align_v="fill"
+					visible="false" src="door-15.png" weight_v="1" pack_h="511"
+					weight_h="1" align_h="fill" aspect_fixed="false" pack_w="503"
+					pack_x="272" pack_y="136" no_scale="false" id="DoorOpenImage"
+					fill_outside="false">
+					<event function_name="main_DoorOpenImage_onclicked" signal="clicked" />
+				</image>
+			</grid>
+			<event function_name="main_onuib_view_create" signal="uib,view,create" />
+		</view>
+		<view indicator="true" page_location_x="479" page_location_y="6"
+			id="viewConfig" type="view">
+			<grid align_h="fill" vsize_w="1000" align_v="fill" visible="true"
+				weight_v="1" id="grid2" weight_h="1" vsize_h="1000">
+				<image resizable_up="false" resizable_down="false" align_v="fill" visible="true" weight_v="1" weight_h="1" align_h="fill" aspect_fixed="false" no_scale="false" id="image3" fill_outside="false" pack_x="11" pack_y="-3" pack_w="1000" pack_h="1025"><event function_name="viewConfig_image3_onclicked" signal="clicked"/></image><button align_v="fill" visible="true" weight_v="1" weight_h="1"
+					align_h="fill" disable="false" style="bottom" id="OK" text="OK"
+					pack_x="316" pack_y="704" pack_w="364" pack_h="364">
+					<event connection_wrapper="connection_viewConfig_OK_onclicked"
+						function_name="viewConfig_OK_onclicked" signal="clicked" target="main" />
+				</button>
+				<entry align_v="fill" visible="true" weight_v="1" editable="true"
+					scroll="false" weight_h="1" single_line="true" align_h="fill"
+					password="false" file_text_format="plain_utf8" disable="false" id="Username"
+					text="user@domain.com" pack_x="185" pack_y="217" pack_w="758"
+					pack_h="139">
+					<event function_name="viewConfig_Username_onclicked" signal="clicked" /><event function_name="viewConfig_Username_onactivated" signal="activated"/></entry>
+				<entry align_v="fill" visible="true" weight_v="1" editable="true"
+					scroll="false" weight_h="1" single_line="false" align_h="fill"
+					password="true" file_text_format="plain_utf8" disable="false" id="Password"
+					text="password" pack_x="193" pack_y="477" pack_w="653" pack_h="139"><event function_name="viewConfig_Password_onclicked" signal="clicked"/><event function_name="viewConfig_Password_onactivated" signal="activated"/></entry>
+				<entry align_v="fill" visible="true" weight_v="1" editable="false"
+					scroll="false" weight_h="1" single_line="false" align_h="fill"
+					password="false" file_text_format="plain_utf8" disable="false" id="User"
+					text="User:" pack_x="177" pack_y="125" pack_w="417" pack_h="139"></entry>
+				<entry align_v="fill" visible="true" weight_v="1" editable="false"
+					scroll="false" weight_h="1" single_line="false" align_h="fill"
+					password="false" file_text_format="plain_utf8" disable="false" id="Pass"
+					text="Password" pack_x="184" pack_y="383" pack_w="417" pack_h="139"></entry></grid>
+			<event function_name="viewConfig_onuib_view_create" signal="uib,view,create" />
+		</view>
+	</views>
+</document>
