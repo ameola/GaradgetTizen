@@ -13,6 +13,7 @@
 2) Hit Run or Debug to start the emulator.
 
 # Running on a real device
+WARNING: This really isn't fit for public consumption but if you're brave, read on!
 1) Set your watch to connect to wifi. 
 2) Under the connections menu, open Wifi Networks and select the network you are connected to.
 3) Scroll down to IP address and write this down
@@ -26,6 +27,7 @@
 - Only the first garage door is supported in this version.
 - Each time you redeploy the app, the credentials will be lost and you will need to configure again.
 - UI fit / finish
+- Memory leaks! I really just made this work and didn't pay much attention to memory management.
 - Probably many more.
 
 # To do list
