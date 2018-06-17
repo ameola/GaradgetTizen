@@ -15,13 +15,6 @@
 					<event connection_wrapper="connection_main_bntConfig_onclicked"
 						function_name="main_bntConfig_onclicked" signal="clicked" target="viewConfig" />
 				</button>
-				<image resizable_up="true" resizable_down="true" align_v="fill"
-					visible="false" weight_v="1" weight_h="1" align_h="fill"
-					aspect_fixed="false" no_scale="false" id="DoorClosedImage"
-					fill_outside="false" pack_x="269" pack_y="133" pack_w="501" pack_h="509"
-					src="door-01.png">
-					<event function_name="main_image1_onclicked" signal="clicked" />
-				</image>
 				<entry align_v="fill" visible="true" weight_v="1" editable="false"
 					scroll="false" weight_h="1" single_line="false" align_h="fill"
 					password="false" file_text_format="plain_utf8" disable="false" id="NoConfig"
@@ -30,11 +23,11 @@
 				<image resizable_up="true" resizable_down="true" align_v="fill"
 					visible="false" src="door-15.png" weight_v="1" pack_h="511"
 					weight_h="1" align_h="fill" aspect_fixed="false" pack_w="503"
-					pack_x="272" pack_y="136" no_scale="false" id="DoorOpenImage"
+					pack_x="255" pack_y="92" no_scale="false" id="DoorImage"
 					fill_outside="false">
 					<event function_name="main_DoorOpenImage_onclicked" signal="clicked" />
 				</image>
-			</grid>
+			<entry align_v="fill" visible="true" weight_v="1" editable="false" scroll="false" weight_h="1" single_line="true" align_h="fill" password="false" file_text_format="plain_utf8" disable="false" id="doorName" text="" pack_x="246" pack_y="566" pack_w="551" pack_h="153"></entry></grid>
 			<event function_name="main_onuib_view_create" signal="uib,view,create" />
 		</view>
 		<view indicator="true" page_location_x="479" page_location_y="6"

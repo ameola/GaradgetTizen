@@ -7,364 +7,84 @@
 #include "uib_views.h"
 #include "uib_views_inc.h"
 #include <app_preference.h>
-#include <curl/curl.h>
-#include <net_connection.h>
-#include <json-glib/json-glib.h>
-
-struct MemoryStruct {
-  char *memory;
-  size_t size;
-};
+#include "../particle/garadget.h"
+#include <Ecore.h>
 
 typedef struct _uib_main_control_context {
  /* add your variables here */
 
 } uib_main_control_context;
 
-void main_bntConfig_onclicked(uib_main_view_context *vc, Evas_Object *obj, void *event_info) {
-	//Invoked at the start of wrapper function main_connection_main_bntConfig_onclicked
-
-}
-
-void main_bntConfig_onclicked_post(void* param, uib_main_view_context *vc, Evas_Object *obj, void *event_info) {
-	//Invoked post wrapper function main_connection_main_bntConfig_onclicked
-
-}
-
-WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
-{
-  size_t realsize = size * nmemb;
-  struct MemoryStruct *mem = (struct MemoryStruct *)userp;
-
-  mem->memory = realloc(mem->memory, mem->size + realsize + 1);
-  if(mem->memory == NULL) {
-    /* out of memory! */
-    printf("not enough memory (realloc returned NULL)\n");
-    return 0;
-  }
-
-  memcpy(&(mem->memory[mem->size]), contents, realsize);
-  mem->size += realsize;
-  mem->memory[mem->size] = 0;
-
-  return realsize;
-}
-
-void getToken(char **token, char *user, char *password) {
-	// TODO: Check for missing user / pass
-
-	CURL *curl;
-	CURLcode curl_err;
-
-	/* init the curl session */
-	curl = curl_easy_init();
-
-	connection_h connection;
-	int conn_err;
-	conn_err = connection_create(&connection);
-	if (conn_err != CONNECTION_ERROR_NONE)
-	{
-		/* Error handling */
-
-		return;
-	}
-
-	curl_easy_setopt(curl, CURLOPT_URL, "https://api.particle.io/oauth/token");
-	curl_easy_setopt(curl, CURLOPT_USERPWD, "_podKeys5db47ca19f1da96a97740db1d7baaf86:_podKeys1a06c62aaa643af1fb75286280c70551");
-
-	// Post data
-	int postLength = strlen("username=&password=&grant_type=password&expires_in=43200") + strlen(user) + strlen(password) + 1;
-	char *postData = (char *)calloc(postLength, sizeof(char));
-	snprintf(postData, postLength, "grant_type=password&username=%s&password=%s&expires_in=43200", user, password);
-
-	curl_easy_setopt(curl, CURLOPT_POST, 1L);
-	  /* size of the POST data */
-
-	  curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, postLength);
-
-	  /* pass in a pointer to the data - libcurl will not copy */
-	  curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postData);
-
-	// Callback for data
-	/* send all data to this function  */
-	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
-
-	struct MemoryStruct chunk;
-	chunk.memory = malloc(1);
-	chunk.size = 0;
-
-	/* we pass the 'chunk' struct to the callback function */
-	curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
-
-	/* getting data */
-	curl_err = curl_easy_perform(curl);
-
-	if (curl_err != CURLE_OK) {
-	    /* Error handling */
-		return;
-	}
-
-	// JSON Parser
-	JsonParser *jsonParser  =  NULL;
-	GError *error  =  NULL;
-	jsonParser = json_parser_new ();
-
-	json_parser_load_from_data(jsonParser, chunk.memory, chunk.size, &error);
-
-	if (error)
-	{
-	    g_error_free (error);
-	}
-	else
-	{
-	    JsonNode *root;
-	    root = json_parser_get_root (jsonParser);
-	    JsonReader *reader = json_reader_new(root);
-	    json_reader_read_member(reader, "access_token");
-	    *token = json_reader_get_string_value(reader);
-	}
-
-	curl_easy_cleanup(curl);
-	connection_unset_proxy_address_changed_cb(connection);
-	connection_destroy(connection);
-}
-
-void getDoors(char* token, int doorIndex, char **doorName) {
-	CURL *curl;
-	CURLcode curl_err;
-
-	/* init the curl session */
-	curl = curl_easy_init();
-
-	connection_h connection;
-	int conn_err;
-	conn_err = connection_create(&connection);
-	if (conn_err != CONNECTION_ERROR_NONE)
-	{
-		/* Error handling */
-		return;
-	}
-
-	int urlLength = strlen("https://api.particle.io/v1/devices?access_token=%s") + strlen(token) + 1;
-	char *urlData = (char *)calloc(urlLength, sizeof(char));
-	snprintf(urlData, urlLength, "https://api.particle.io/v1/devices?access_token=%s", token);
-
-	curl_easy_setopt(curl, CURLOPT_URL, urlData);
-
-	// Callback for data
-	/* send all data to this function  */
-	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
-
-	struct MemoryStruct chunk;
-	chunk.memory = malloc(1);
-	chunk.size = 0;
-
-	/* we pass the 'chunk' struct to the callback function */
-	curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
-
-	/* getting data */
-	curl_err = curl_easy_perform(curl);
-
-	if (curl_err != CURLE_OK) {
-	    /* Error handling */
-		return;
-	}
-
-	// JSON Parser
-	JsonParser *jsonParser  =  NULL;
-	GError *error  =  NULL;
-	jsonParser = json_parser_new ();
-
-	json_parser_load_from_data(jsonParser, chunk.memory, chunk.size, &error);
-
-	if (error)
-	{
-	    g_error_free (error);
-	}
-	else
-	{
-	    JsonNode *root;
-	    root = json_parser_get_root (jsonParser);
-	    JsonReader *reader = json_reader_new(root);
-
-	    int numGarages = json_reader_count_elements(reader);
-	    // TODO: Validate number
-	    	json_reader_read_element(reader, doorIndex);
-	    	json_reader_read_member(reader, "name");
-	    	*doorName = json_reader_get_string_value(reader);
-	    	json_reader_end_member(reader);
-	    	json_reader_end_element(reader);
-	}
-
-	curl_easy_cleanup(curl);
-	connection_unset_proxy_address_changed_cb(connection);
-	connection_destroy(connection);
-};
-
-void openDoor(char *token, char *doorName, char *action) {
-	CURL *curl;
-	CURLcode curl_err;
-
-	/* init the curl session */
-	curl = curl_easy_init();
-
-	connection_h connection;
-	int conn_err;
-	conn_err = connection_create(&connection);
-	if (conn_err != CONNECTION_ERROR_NONE)
-	{
-		/* Error handling */
-
-		return;
-	}
-
-	int urlLength = strlen("https://api.particle.io/v1/devices/%s/setState") + strlen(doorName) + 1;
-	char *urlData = (char *)calloc(urlLength, sizeof(char));
-	snprintf(urlData, urlLength, "https://api.particle.io/v1/devices/%s/setState", doorName);
-
-	curl_easy_setopt(curl, CURLOPT_URL, urlData);
-
-	// Post data
-	int postLength = strlen("access_token=&arg=") + strlen(token) +strlen(action) + 1;
-	char *postData = (char *)calloc(postLength, sizeof(char));
-	snprintf(postData, postLength, "access_token=%s&arg=%s", token, action);
-
-	curl_easy_setopt(curl, CURLOPT_POST, 1L);
-    /* size of the POST data */
-
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, postLength);
-
-    /* pass in a pointer to the data - libcurl will not copy */
-	curl_easy_setopt(curl, CURLOPT_POSTFIELDS, postData);
-
-	// Callback for data
-	/* send all data to this function  */
-	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
-
-	struct MemoryStruct chunk;
-	chunk.memory = malloc(1);
-	chunk.size = 0;
-
-	/* we pass the 'chunk' struct to the callback function */
-	curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
-
-	/* getting data */
-	curl_err = curl_easy_perform(curl);
-
-	if (curl_err != CURLE_OK) {
-	    /* Error handling */
-		return;
-	}
-
-	curl_easy_cleanup(curl);
-	connection_unset_proxy_address_changed_cb(connection);
-	connection_destroy(connection);
-}
-
-void getDoorStatus(char *token, char *doorName, bool *isOpen) {
-	CURL *curl;
-	CURLcode curl_err;
-
-	/* init the curl session */
-	curl = curl_easy_init();
-
-	connection_h connection;
-	int conn_err;
-	conn_err = connection_create(&connection);
-	if (conn_err != CONNECTION_ERROR_NONE)
-	{
-		/* Error handling */
-
-		return;
-	}
-
-	int urlLength = strlen("https://api.particle.io/v1/devices//doorStatus?access_token=") + strlen(doorName) + strlen(token) + 1;
-	char *urlData = (char *)calloc(urlLength, sizeof(char));
-	snprintf(urlData, urlLength, "https://api.particle.io/v1/devices/%s/doorStatus?access_token=%s", doorName, token);
-
-	curl_easy_setopt(curl, CURLOPT_URL, urlData);
-
-	// Callback for data
-	/* send all data to this function  */
-	curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
-
-	struct MemoryStruct chunk;
-	chunk.memory = malloc(1);
-	chunk.size = 0;
-
-	/* we pass the 'chunk' struct to the callback function */
-	curl_easy_setopt(curl, CURLOPT_WRITEDATA, (void *)&chunk);
-
-	/* getting data */
-	curl_err = curl_easy_perform(curl);
-
-	if (curl_err != CURLE_OK) {
-	    /* Error handling */
-		return;
-	}
-
-	// Read response
-	// JSON Parser
-	JsonParser *jsonParser  =  NULL;
-	GError *error  =  NULL;
-	jsonParser = json_parser_new ();
-	char *status;
-
-	json_parser_load_from_data(jsonParser, chunk.memory, chunk.size, &error);
-
-	if (error)
-	{
-	    g_error_free (error);
-	}
-	else
-	{
-	    JsonNode *root;
-	    root = json_parser_get_root (jsonParser);
-	    JsonReader *reader = json_reader_new(root);
-
-	    // TODO: Validate number
-    	json_reader_read_member(reader, "result");
-    	status = json_reader_get_string_value(reader);
-    	json_reader_end_member(reader);
-	}
-
-	if (strstr(status, "closed") == NULL) {
-		*isOpen = true;
-	} else {
-		*isOpen = false;
-	}
-
-	curl_easy_cleanup(curl);
-	connection_unset_proxy_address_changed_cb(connection);
-	connection_destroy(connection);
-}
-
 bool isOpen = false;
 char *token = NULL;
 char *currentDoorName = NULL;
+Ecore_Timer *timer = NULL;
+Ecore_Timer *animationTimer = NULL;
+bool isOpening = false;
+int currentFrame = 1;
+
+void setDebugResult(uib_main_view_context *vc, REMOTE_RESULT result) {
+	if (result != REMOTE_RESULT_OK) {
+		char strval[256];
+		sprintf(strval, "%d", result);
+		elm_object_text_set(vc->doorName, strval);
+	}
+	else {
+		elm_object_text_set(vc->doorName, currentDoorName);
+	}
+}
+
+void setImageFrame(uib_main_view_context *vc, int frame) {
+	char fileName[256];
+
+	sprintf(&fileName, "%sdoor-%02d.png", app_get_resource_path(), frame);
+	elm_image_file_set(vc->DoorImage, fileName, NULL);
+}
 
 void updateUi(uib_main_view_context *vc) {
 	if (!isOpen) {
-		evas_object_show(vc->DoorClosedImage);
-		evas_object_hide(vc->DoorOpenImage);
+		setImageFrame(vc, 1);
+		evas_object_show(vc->DoorImage);
 		evas_object_hide(vc->NoConfig);
 	} else {
-		evas_object_show(vc->DoorOpenImage);
-		evas_object_hide(vc->DoorClosedImage);
+		setImageFrame(vc, 15);
+		evas_object_show(vc->DoorImage);
 		evas_object_hide(vc->NoConfig);
 	}
 }
 
 void updateState(uib_main_view_context *vc) {
-	getDoorStatus(token, currentDoorName, &isOpen);
+	setDebugResult(vc, getDoorStatus(token, currentDoorName, &isOpen));
 	updateUi(vc);
-
 }
 
-void main_image1_onclicked(uib_main_view_context *vc, Evas_Object *obj, void *event_info) {
-	openDoor(token, currentDoorName, "open");
-	isOpen = true;
-	updateUi(vc);
+Eina_Bool updateStateTimer(void *data) {
+	uib_main_view_context *vc = (uib_main_view_context *)data;
+	updateState(vc);
+
+	return ECORE_CALLBACK_RENEW;
+}
+
+Eina_Bool updateAnimationTimer(void *data) {
+	uib_main_view_context *vc = (uib_main_view_context *)data;
+	Eina_Bool returnVal = ECORE_CALLBACK_RENEW;
+
+	if (isOpening) {
+		currentFrame +=1;
+
+		if (currentFrame == 15) {
+			returnVal = ECORE_CALLBACK_CANCEL;
+		}
+	} else {
+		currentFrame -=1;
+
+		if (currentFrame == 1) {
+			returnVal = ECORE_CALLBACK_CANCEL;
+		}
+	}
+
+	setImageFrame(vc, currentFrame);
+	return returnVal;
 }
 
 void main_onuib_view_create(uib_main_view_context *vc, Evas_Object *obj, void *event_info) {
@@ -374,8 +94,12 @@ void main_onuib_view_create(uib_main_view_context *vc, Evas_Object *obj, void *e
 	bool existing = false;
 
 	// TODO: Cache token in prefs
-	preference_is_existing ("user", &existing);
+	preference_is_existing ("token", &existing);
+	if (existing && !token) {
+		preference_get_string("token", &token);
+	}
 
+	preference_is_existing ("user", &existing);
 	if (existing) {
 		preference_get_string("user", &user);
 
@@ -387,20 +111,47 @@ void main_onuib_view_create(uib_main_view_context *vc, Evas_Object *obj, void *e
 
 	if (existing) {
 		if (!token) {
-			getToken(&token, user, password);
+			setDebugResult(vc, getToken(&token, user, password));
+			preference_set_string("token", token);
 		}
 
 		if (!currentDoorName) {
-			getDoors(token, 0, &currentDoorName);
+			setDebugResult(vc, getDoors(token, 0, &currentDoorName));
 		}
 
 		updateState(vc);
+		timer = ecore_timer_add(60, updateStateTimer, (void*)vc);
 	}
 }
 
 void main_DoorOpenImage_onclicked(uib_main_view_context *vc, Evas_Object *obj, void *event_info) {
-	openDoor(token, currentDoorName, "close");
-	isOpen = false;
-	updateUi(vc);
+	setDebugResult(vc, getDoorStatus(token, currentDoorName, &isOpen));
+	if (isOpen) {
+		setDebugResult(vc, openDoor(token, currentDoorName, "close"));
+		isOpening = false;
+		currentFrame = 15;
+	}
+	else {
+		setDebugResult(vc, openDoor(token, currentDoorName, "open"));
+		isOpening = true;
+		currentFrame = 1;
+	}
+
+	animationTimer = ecore_timer_add(1, updateAnimationTimer, (void*)vc);
 }
 
+
+void main_bntConfig_onclicked(uib_main_view_context *vc, Evas_Object *obj, void *event_info) {
+	//Invoked at the start of wrapper function main_connection_main_bntConfig_onclicked
+	if (timer) {
+		ecore_timer_del(timer);
+	}
+
+	if (animationTimer) {
+		ecore_timer_del(animationTimer);
+	}
+}
+
+void main_bntConfig_onclicked_post(void* param, uib_main_view_context *vc, Evas_Object *obj, void *event_info) {
+	//Invoked post wrapper function main_connection_main_bntConfig_onclicked
+}

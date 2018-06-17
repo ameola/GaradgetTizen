@@ -13,7 +13,6 @@
 /* event handler declarations */
 void main_onuib_view_create(uib_main_view_context*, Evas_Object*, void*);
 void connection_main_bntConfig_onclicked(uib_main_view_context*, Evas_Object*, void*);
-void main_image1_onclicked(uib_main_view_context*, Evas_Object*, void*);
 void main_DoorOpenImage_onclicked(uib_main_view_context*, Evas_Object*, void*);
 
 uib_view_context* uib_view_main_create(Evas_Object* parent, void* create_callback_param) {
@@ -33,8 +32,7 @@ uib_view_context* uib_view_main_create(Evas_Object* parent, void* create_callbac
 	evas_object_smart_callback_add(vc->root_container, "uib,view,create", (Evas_Smart_Cb)main_onuib_view_create, vc);
 	evas_object_smart_callback_add(vc->bntConfig, "clicked", (Evas_Smart_Cb)connection_main_bntConfig_onclicked, vc);
 
-	evas_object_smart_callback_add(vc->DoorClosedImage, "clicked", (Evas_Smart_Cb)main_image1_onclicked, vc);
-	evas_object_smart_callback_add(vc->DoorOpenImage, "clicked", (Evas_Smart_Cb)main_DoorOpenImage_onclicked, vc);
+	evas_object_smart_callback_add(vc->DoorImage, "clicked", (Evas_Smart_Cb)main_DoorOpenImage_onclicked, vc);
 
 
 	evas_object_data_set(vc->root_container, KEY_VIEW_CONTEXT, vc);
@@ -60,26 +58,6 @@ void uib_main_config_CIRCLE_360x360_portrait() {
 			elm_object_style_set(vc->bntConfig,"bottom");
 			evas_object_show(vc->bntConfig);
 		}
-		if (!vc->DoorClosedImage) {
-			vc->DoorClosedImage = elm_image_add(vc->grid1);
-		}
-		if(vc->DoorClosedImage) {
-			char *resource_path = NULL;
-			uib_util_rm_get_resource_path(APP_RESOURCE_TYPE_IMAGE, "door-01.png", &resource_path);
-			elm_image_file_set(vc->DoorClosedImage, resource_path, NULL);
-			if(resource_path) {
-				free(resource_path);
-			}
-			elm_image_smooth_set(vc->DoorClosedImage, EINA_TRUE);
-			elm_image_no_scale_set(vc->DoorClosedImage, EINA_FALSE);
-			elm_image_resizable_set(vc->DoorClosedImage, EINA_TRUE, EINA_TRUE);
-			elm_image_aspect_fixed_set(vc->DoorClosedImage, EINA_FALSE);
-			elm_image_fill_outside_set(vc->DoorClosedImage, EINA_FALSE);
-			elm_image_editable_set(vc->DoorClosedImage, EINA_FALSE);
-			evas_object_size_hint_align_set(vc->DoorClosedImage, -1.0, -1.0);
-			evas_object_size_hint_weight_set(vc->DoorClosedImage, 1.0, 1.0);
-			evas_object_hide(vc->DoorClosedImage);
-		}
 		if (!vc->NoConfig) {
 			vc->NoConfig= elm_entry_add(vc->grid1);
 		}
@@ -94,27 +72,40 @@ void uib_main_config_CIRCLE_360x360_portrait() {
 			elm_object_disabled_set(vc->NoConfig, EINA_FALSE);
 			evas_object_show(vc->NoConfig);
 		}
-		if (!vc->DoorOpenImage) {
-			vc->DoorOpenImage = elm_image_add(vc->grid1);
+		if (!vc->DoorImage) {
+			vc->DoorImage = elm_image_add(vc->grid1);
 		}
-		if(vc->DoorOpenImage) {
+		if(vc->DoorImage) {
 			char *resource_path = NULL;
 			uib_util_rm_get_resource_path(APP_RESOURCE_TYPE_IMAGE, "door-15.png", &resource_path);
-			elm_image_file_set(vc->DoorOpenImage, resource_path, NULL);
+			elm_image_file_set(vc->DoorImage, resource_path, NULL);
 			if(resource_path) {
 				free(resource_path);
 			}
-			elm_image_smooth_set(vc->DoorOpenImage, EINA_TRUE);
-			elm_image_no_scale_set(vc->DoorOpenImage, EINA_FALSE);
-			elm_image_resizable_set(vc->DoorOpenImage, EINA_TRUE, EINA_TRUE);
-			elm_image_aspect_fixed_set(vc->DoorOpenImage, EINA_FALSE);
-			elm_image_fill_outside_set(vc->DoorOpenImage, EINA_FALSE);
-			elm_image_editable_set(vc->DoorOpenImage, EINA_FALSE);
-			evas_object_size_hint_align_set(vc->DoorOpenImage, -1.0, -1.0);
-			evas_object_size_hint_weight_set(vc->DoorOpenImage, 1.0, 1.0);
-			evas_object_hide(vc->DoorOpenImage);
+			elm_image_smooth_set(vc->DoorImage, EINA_TRUE);
+			elm_image_no_scale_set(vc->DoorImage, EINA_FALSE);
+			elm_image_resizable_set(vc->DoorImage, EINA_TRUE, EINA_TRUE);
+			elm_image_aspect_fixed_set(vc->DoorImage, EINA_FALSE);
+			elm_image_fill_outside_set(vc->DoorImage, EINA_FALSE);
+			elm_image_editable_set(vc->DoorImage, EINA_FALSE);
+			evas_object_size_hint_align_set(vc->DoorImage, -1.0, -1.0);
+			evas_object_size_hint_weight_set(vc->DoorImage, 1.0, 1.0);
+			evas_object_hide(vc->DoorImage);
 		}
-		elm_grid_pack(vc->grid1, vc->bntConfig, 322, 694, 364, 364);		elm_grid_pack(vc->grid1, vc->DoorClosedImage, 269, 133, 501, 509);		elm_grid_pack(vc->grid1, vc->NoConfig, 169, 273, 716, 281);		elm_grid_pack(vc->grid1, vc->DoorOpenImage, 272, 136, 503, 511);		evas_object_show(vc->grid1);
+		if (!vc->doorName) {
+			vc->doorName= elm_entry_add(vc->grid1);
+		}
+		if(vc->doorName) {
+			elm_entry_single_line_set(vc->doorName, EINA_TRUE);
+			elm_entry_password_set(vc->doorName, EINA_FALSE);
+			elm_entry_editable_set(vc->doorName, EINA_FALSE);
+			elm_entry_scrollable_set(vc->doorName, EINA_FALSE);
+			evas_object_size_hint_align_set(vc->doorName, -1.0, -1.0);
+			evas_object_size_hint_weight_set(vc->doorName, 1.0, 1.0);
+			elm_object_disabled_set(vc->doorName, EINA_FALSE);
+			evas_object_show(vc->doorName);
+		}
+		elm_grid_pack(vc->grid1, vc->bntConfig, 322, 694, 364, 364);		elm_grid_pack(vc->grid1, vc->NoConfig, 169, 273, 716, 281);		elm_grid_pack(vc->grid1, vc->DoorImage, 255, 92, 503, 511);		elm_grid_pack(vc->grid1, vc->doorName, 246, 566, 551, 153);		evas_object_show(vc->grid1);
 	}
 }
 

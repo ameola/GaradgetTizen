@@ -36,12 +36,12 @@ typedef struct _uib_main_view_context {
 	Evas_Object *circle_object_grid1;
 	Evas_Object *bntConfig;
 	Evas_Object *circle_object_bntConfig;
-	Evas_Object *DoorClosedImage;
-	Evas_Object *circle_object_DoorClosedImage;
 	Evas_Object *NoConfig;
 	Evas_Object *circle_object_NoConfig;
-	Evas_Object *DoorOpenImage;
-	Evas_Object *circle_object_DoorOpenImage;
+	Evas_Object *DoorImage;
+	Evas_Object *circle_object_DoorImage;
+	Evas_Object *doorName;
+	Evas_Object *circle_object_doorName;
 } uib_main_view_context;
 
 
