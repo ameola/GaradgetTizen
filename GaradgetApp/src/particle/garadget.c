@@ -39,9 +39,7 @@ REMOTE_RESULT validateResponse(struct MemoryStruct data) {
 
 	if (error) {
 		g_error_free(error);
-	}
-	else {
-		return false;
+		return REMOTE_RESULT_INVALID_RESPONSE;
 	}
 
     JsonNode *root;
@@ -54,6 +52,7 @@ REMOTE_RESULT validateResponse(struct MemoryStruct data) {
         	json_reader_read_member(reader, "error");
 	        const char *error_response = json_reader_get_string_value(reader);
             bool isAutorized = strcmp("invalid_token", error_response) != 0;
+            bool accessDenied = strcmp("invalid_grant", error_response) == 0;
 
             json_reader_end_member(reader);
 
@@ -64,6 +63,9 @@ REMOTE_RESULT validateResponse(struct MemoryStruct data) {
                 return REMOTE_RESULT_OK;
             }
 
+            if (accessDenied) {
+            	return REMOTE_RESULT_INCORRECT_CREDS;
+            }
             return REMOTE_RESULT_UNAUTHORIZED;            
         }
     }
@@ -76,6 +78,7 @@ REMOTE_RESULT validateResponse(struct MemoryStruct data) {
 REMOTE_RESULT performGet(char *url, MemoryStruct *data) {
     CURL *curl;
 	CURLcode curl_err;
+	char *proxy_address;
 
     curl = curl_easy_init();
 
@@ -88,6 +91,14 @@ REMOTE_RESULT performGet(char *url, MemoryStruct *data) {
 		return REMOTE_RESULT_INTERNAL_ERROR;
 	}
 
+	conn_err = connection_get_proxy(connection, CONNECTION_ADDRESS_FAMILY_IPV4, &proxy_address);
+
+	if (conn_err != CONNECTION_ERROR_NONE)
+	{
+		return REMOTE_RESULT_INTERNAL_ERROR;
+	}
+
+	curl_easy_setopt(curl, CURLOPT_PROXY, proxy_address);
     curl_easy_setopt(curl, CURLOPT_URL, url);
 
 	// Callback for data
@@ -98,13 +109,13 @@ REMOTE_RESULT performGet(char *url, MemoryStruct *data) {
 	/* getting data */
 	curl_err = curl_easy_perform(curl);
 
+	free(proxy_address);
+	curl_easy_cleanup(curl);
+	connection_destroy(connection);
+
 	if (curl_err != CURLE_OK) {
-    	curl_easy_cleanup(curl);
-    	connection_destroy(connection);
 		return REMOTE_RESULT_INTERNAL_ERROR;
 	}
-
-    connection_destroy(connection);
 
     return validateResponse(*data);
 }
@@ -112,6 +123,7 @@ REMOTE_RESULT performGet(char *url, MemoryStruct *data) {
 REMOTE_RESULT performPost(char *url, char *postData, MemoryStruct *data) {
     CURL *curl;
 	CURLcode curl_err;
+	char *proxy_address;
 
     curl = curl_easy_init();
 
@@ -124,6 +136,14 @@ REMOTE_RESULT performPost(char *url, char *postData, MemoryStruct *data) {
 		return REMOTE_RESULT_INTERNAL_ERROR;
 	}
 
+	conn_err = connection_get_proxy(connection, CONNECTION_ADDRESS_FAMILY_IPV4, &proxy_address);
+
+	if (conn_err != CONNECTION_ERROR_NONE)
+	{
+		return REMOTE_RESULT_INTERNAL_ERROR;
+	}
+
+	curl_easy_setopt(curl, CURLOPT_PROXY, proxy_address);
     curl_easy_setopt(curl, CURLOPT_URL, url);
 
 	// Callback for data
@@ -139,13 +159,13 @@ REMOTE_RESULT performPost(char *url, char *postData, MemoryStruct *data) {
 	/* getting data */
 	curl_err = curl_easy_perform(curl);
 
+	free(proxy_address);
+	curl_easy_cleanup(curl);
+	connection_destroy(connection);
+
 	if (curl_err != CURLE_OK) {
-    	curl_easy_cleanup(curl);
-    	connection_destroy(connection);
 		return REMOTE_RESULT_INTERNAL_ERROR;
 	}
-
-    connection_destroy(connection);
 
     return validateResponse(*data);
 }
@@ -230,6 +250,7 @@ REMOTE_RESULT getDoors(char* token, int doorIndex, char **doorName) {
 	data.size = 0;
 
     REMOTE_RESULT result = performGet(urlData, &data);
+
     cfree(urlData);
 
     if (result != REMOTE_RESULT_OK) {

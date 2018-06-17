@@ -43,7 +43,7 @@
                             							
                             <builder autoBuildTarget="all" buildPath="${workspace_loc:/GaradgetApp}/Debug" enableAutoBuild="true" id="org.tizen.nativecore.target.sbi.gnu.builder.887700307" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="Tizen Application Builder" superClass="org.tizen.nativecore.target.sbi.gnu.builder"/>
                             							
-                            <tool command="arm-linux-gnueabi-ar.exe" id="org.tizen.nativecore.tool.sbi.gnu.archiver.134336556" name="Archiver" superClass="org.tizen.nativecore.tool.sbi.gnu.archiver"/>
+                            <tool command="i386-linux-gnueabi-ar.exe" id="org.tizen.nativecore.tool.sbi.gnu.archiver.134336556" name="Archiver" superClass="org.tizen.nativecore.tool.sbi.gnu.archiver"/>
                             							
                             <tool command="clang++.exe" id="org.tizen.nativecore.tool.sbi.gnu.cpp.compiler.1665045408" name="C++ Compiler" superClass="org.tizen.nativecore.tool.sbi.gnu.cpp.compiler">
                                 								
@@ -55,7 +55,7 @@
                                 								
                                 <option id="sbi.gnu.cpp.compiler.option.763659720" superClass="sbi.gnu.cpp.compiler.option" valueType="userObjs">
                                     									
-                                    <listOptionValue builtIn="false" value="wearable-3.0-device.core_llvm37.armel"/>
+                                    <listOptionValue builtIn="false" value="wearable-3.0-emulator.core_llvm37.i386"/>
                                     								
                                 </option>
                                 								
@@ -236,8 +236,6 @@
                                     <listOptionValue builtIn="false" value=" -fPIE"/>
                                     									
                                     <listOptionValue builtIn="false" value="--sysroot=&quot;${SBI_SYSROOT}&quot;"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="-mthumb"/>
                                     								
                                 </option>
                                 								
@@ -281,7 +279,7 @@
                                 								
                                 <option id="sbi.gnu.c.compiler.option.1834109375" superClass="sbi.gnu.c.compiler.option" valueType="userObjs">
                                     									
-                                    <listOptionValue builtIn="false" value="wearable-3.0-device.core_llvm37.armel"/>
+                                    <listOptionValue builtIn="false" value="wearable-3.0-emulator.core_llvm37.i386"/>
                                     								
                                 </option>
                                 								
@@ -462,8 +460,6 @@
                                     <listOptionValue builtIn="false" value=" -fPIE"/>
                                     									
                                     <listOptionValue builtIn="false" value="--sysroot=&quot;${SBI_SYSROOT}&quot;"/>
-                                    									
-                                    <listOptionValue builtIn="false" value="-mthumb"/>
                                     								
                                 </option>
                                 								
@@ -541,7 +537,7 @@
                                 							
                             </tool>
                             							
-                            <tool command="arm-linux-gnueabi-as.exe" id="org.tizen.nativeapp.tool.sbi.gnu.assembler.base.83272085" name="Assembler" superClass="org.tizen.nativeapp.tool.sbi.gnu.assembler.base">
+                            <tool command="i386-linux-gnueabi-as.exe" id="org.tizen.nativeapp.tool.sbi.gnu.assembler.base.83272085" name="Assembler" superClass="org.tizen.nativeapp.tool.sbi.gnu.assembler.base">
                                 								
                                 <inputType id="cdt.managedbuild.tool.gnu.assembler.input.1604401895" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
                                 							

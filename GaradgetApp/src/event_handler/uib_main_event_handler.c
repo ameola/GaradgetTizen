@@ -22,9 +22,15 @@ Ecore_Timer *timer = NULL;
 Ecore_Timer *animationTimer = NULL;
 bool isOpening = false;
 int currentFrame = 1;
+char *user;
+char *password;
+
 
 void setDebugResult(uib_main_view_context *vc, REMOTE_RESULT result) {
-	if (result != REMOTE_RESULT_OK) {
+	if (result == REMOTE_RESULT_INCORRECT_CREDS || result == REMOTE_RESULT_UNAUTHORIZED) {
+		elm_object_text_set(vc->doorName, "Unauthorized");
+	}
+	else if (result != REMOTE_RESULT_OK) {
 		char strval[256];
 		sprintf(strval, "%d", result);
 		elm_object_text_set(vc->doorName, strval);
@@ -54,7 +60,17 @@ void updateUi(uib_main_view_context *vc) {
 }
 
 void updateState(uib_main_view_context *vc) {
-	setDebugResult(vc, getDoorStatus(token, currentDoorName, &isOpen));
+	REMOTE_RESULT result = getDoorStatus(token, currentDoorName, &isOpen);
+
+	if (result == REMOTE_RESULT_UNAUTHORIZED) {
+		result = getToken(&token, user, password);
+
+		if (result == REMOTE_RESULT_OK) {
+			result = getDoorStatus(token, currentDoorName, &isOpen);
+		}
+	}
+
+	setDebugResult(vc, result);
 	updateUi(vc);
 }
 
@@ -88,9 +104,6 @@ Eina_Bool updateAnimationTimer(void *data) {
 }
 
 void main_onuib_view_create(uib_main_view_context *vc, Evas_Object *obj, void *event_info) {
-	char *user;
-	char *password;
-
 	bool existing = false;
 
 	// TODO: Cache token in prefs
@@ -111,12 +124,27 @@ void main_onuib_view_create(uib_main_view_context *vc, Evas_Object *obj, void *e
 
 	if (existing) {
 		if (!token) {
-			setDebugResult(vc, getToken(&token, user, password));
+			REMOTE_RESULT result = getToken(&token, user, password);
+			if (result != REMOTE_RESULT_OK) {
+				setDebugResult(vc, result);
+				return;
+			}
+
 			preference_set_string("token", token);
 		}
 
 		if (!currentDoorName) {
-			setDebugResult(vc, getDoors(token, 0, &currentDoorName));
+			REMOTE_RESULT result = getDoors(token, 0, &currentDoorName);
+
+			if (result == REMOTE_RESULT_UNAUTHORIZED) {
+				result = getToken(&token, user, password);
+
+				if (result == REMOTE_RESULT_OK) {
+					result = getDoors(token, 0, &currentDoorName);
+				}
+			}
+
+			setDebugResult(vc, result);
 		}
 
 		updateState(vc);
@@ -125,16 +153,27 @@ void main_onuib_view_create(uib_main_view_context *vc, Evas_Object *obj, void *e
 }
 
 void main_DoorOpenImage_onclicked(uib_main_view_context *vc, Evas_Object *obj, void *event_info) {
-	setDebugResult(vc, getDoorStatus(token, currentDoorName, &isOpen));
+	REMOTE_RESULT result = getDoorStatus(token, currentDoorName, &isOpen);
+
+	if (result == REMOTE_RESULT_UNAUTHORIZED) {
+		result = getToken(&token, user, password);
+
+		if (result == REMOTE_RESULT_OK) {
+			result = getDoorStatus(token, currentDoorName, &isOpen);
+		}
+	}
+
+	setDebugResult(vc, result);
+
 	if (isOpen) {
 		setDebugResult(vc, openDoor(token, currentDoorName, "close"));
 		isOpening = false;
-		currentFrame = 15;
+		currentFrame = 14;
 	}
 	else {
 		setDebugResult(vc, openDoor(token, currentDoorName, "open"));
 		isOpening = true;
-		currentFrame = 1;
+		currentFrame = 2;
 	}
 
 	animationTimer = ecore_timer_add(1, updateAnimationTimer, (void*)vc);
@@ -142,6 +181,8 @@ void main_DoorOpenImage_onclicked(uib_main_view_context *vc, Evas_Object *obj, v
 
 
 void main_bntConfig_onclicked(uib_main_view_context *vc, Evas_Object *obj, void *event_info) {
+	token = NULL;
+
 	//Invoked at the start of wrapper function main_connection_main_bntConfig_onclicked
 	if (timer) {
 		ecore_timer_del(timer);
